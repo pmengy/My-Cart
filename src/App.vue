@@ -17,9 +17,14 @@
         <td>{{ item.name }}</td>
         <td>{{ item.price }}</td>
         <td>
-          <button>-</button>
-          <input style="width: 50px" type="number" v-model="item.count" />
-          <button>+</button>
+          <button @click="minus(item.id)" :disabled="flag">-</button>
+          <input
+            style="width: 50px"
+            type="number"
+            v-model="item.count"
+            @blur="getNum(item.id)"
+          />
+          <button @click="plus(item.id)">+</button>
         </td>
         <td>{{ item.price * item.count }}</td>
         <td><button @click="del(item.id)">删除</button></td>
@@ -35,8 +40,8 @@
     <br />
     <div style="margin-top: 20px">
       <h2>统计</h2>
-      <p>已经选中商品件数</p>
-      <p>总价</p>
+      <p>已经选中商品件数{{ total }}</p>
+      <p>总价{{ totalPrice }}</p>
     </div>
   </div>
 </template>
@@ -69,6 +74,7 @@ export default {
           checked: false,
         },
       ],
+      flag: true,
     };
   },
   methods: {
@@ -84,6 +90,23 @@ export default {
     clear() {
       this.list = [];
     },
+    plus(id) {
+      this.flag = false;
+      const index = this.list.findIndex((item) => item.id === id);
+      this.list[index].count++;
+    },
+    minus(id) {
+      const index = this.list.findIndex((item) => item.id === id);
+      this.list[index].count < 1
+        ? (this.flag = true)
+        : this.list[index].count--;
+    },
+    getNum(id) {
+      const index = this.list.findIndex((item) => item.id === id);
+      if (this.list[index].count <= 0) {
+        this.list[index].count = 0;
+      }
+    },
   },
   // 全选框
   computed: {
@@ -96,6 +119,24 @@ export default {
       set(val) {
         this.list.forEach((item) => (item.checked = val));
       },
+    },
+    total() {
+      return this.list.reduce((sum, item) => {
+        if (item.checked) {
+          return sum + item.count;
+        } else {
+          return sum;
+        }
+      }, 0);
+    },
+    totalPrice() {
+      return this.list.reduce((sum, item) => {
+        if (item.checked) {
+          return sum + item.count * item.price;
+        } else {
+          return sum;
+        }
+      }, 0);
     },
   },
 };
